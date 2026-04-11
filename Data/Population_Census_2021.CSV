@@ -1,0 +1,32 @@
+﻿區議會分區（英文名稱),區議會分區（中文名稱),總人口,按性別劃分的人口,按性別劃分的人口,按年齡組別劃分的人口,按年齡組別劃分的人口,按年齡組別劃分的人口,按年齡組別劃分的人口,按年齡組別劃分的人口
+Name of District Council district  (in English),Name of District Council district (in Chinese),Total population,Population by sex,Population by sex,Population by age group,Population by age group,Population by age group,Population by age group,Population by age group
+區議會分區（英文名稱),區議會分區（中文名稱),總人口,男性,女性,15歲以下,15至24歲,25至44歲,45至64歲,65歲及以上
+Name of District Council district  (in English),Name of District Council district (in Chinese),Total population,Male,Female,< 15 ,15 - 24,25 - 44,45 - 64,65+ 
+dc_eng,dc_chi,t_pop,pop_m,pop_f,age_1,age_2,age_3,age_4,age_5
+Central and Western,中西區,235953,98282,137671,24382,16779,77767,71534,45491
+Wan Chai,灣仔區,166695,67075,99620,16917,9907,53860,50632,35379
+Eastern,東區,529603,233542,296061,51517,36336,143911,174132,123707
+Southern,南區,263278,116239,147039,27255,18842,72397,87976,56808
+Yau Tsim Mong,油尖旺區,310647,138873,171774,36181,23224,100877,94797,55568
+Sham Shui Po,深水埗區,431090,197878,233212,49337,35476,123081,135261,87935
+Kowloon City,九龍城區,410634,179518,231116,50327,31113,121174,125562,82458
+Wong Tai Sin,黃大仙區,406802,187531,219271,36271,33463,103363,140294,93411
+Kwun Tong,觀塘區,673166,312303,360863,70063,60321,174338,220703,147741
+Kwai Tsing,葵青區,495798,232213,263585,49421,42474,132936,161501,109466
+Tsuen Wan,荃灣區,320094,146412,173682,37873,24515,95270,104390,58046
+Tuen Mun,屯門區,506879,240321,266558,54136,38535,152609,163644,97955
+Yuen Long,元朗區,668080,314056,354024,77199,58988,211376,220151,100366
+North,北區,309631,145343,164288,33499,27654,88314,104607,55557
+Tai Po,大埔區,316470,146038,170432,34377,23198,97583,102810,58502
+Sha Tin,沙田區,692806,317927,374879,78886,53696,201135,220604,138485
+Sai Kung,西貢區,489037,223094,265943,56329,39744,150700,164991,77273
+Islands,離島區,185282,84985,100297,23767,16808,58660,58751,27296
+Land total,陸上總計,7411945,3381630,4030315,807737,591073,2159351,2402340,1451444
+,,,,,,,,,
+,,,,,,,,,
+資料來源：,政府統計處　2021年人口普查,,,,,,,,
+,（查詢電話：3428 2744； 查詢電郵：census2021@censtatd.gov.hk）,,,,,,,,
+Source:,"2021 Population Census, Census and Statistics Department ",,,,,,,,
+,(Enquiry telephone no.: 3428 2744; Enquiry e-mail: census2021@censtatd.gov.hk),,,,,,,,
+如欲獲取更多2021年人口普查的地區統計數字，請瀏覽2021年人口普查主題網站內的「地區概覽」（www.census2021.gov.hk/tc/district_profiles.html）。,,,,,,,,,
+"For more geographical statistics of the 2021 Population Census, please visit the ""District Profiles"" of the 2021 Population Census thematic website (www.census2021.gov.hk/en/district_profiles.html).",,,,,,,,,
