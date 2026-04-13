@@ -3,24 +3,18 @@ import pandas as pd
 import math
 import os
 
+# Task 2: Python Module Implementation for Facilities
+# This module is used to read cleaned data of different facilities, convert it into ArcGIS feature classes, and perform simple spatial location queries.
 class Facility:
-    """
-    Task 2: 设施类的 Python 模块实现
-    该模块用于读取清洗后的不同设施数据，转换为ArcGIS要素类，并能进行简单的空间定位查询。
-    """
 
+    # Initialization method: Receive the path to the cleaned facility CSV file and define instance variables to record core attributes.
     def __init__(self, csv_filepath):
-        """
-        初始化方法：接收清洗后的设施 CSV 文件路径，并定义实例变量以记录核心属性。
-        
-        参数:
-            csv_filepath (str): 清洗完毕的 CSV 设施数据的文件路径。
-        """
+        # csv_filepath (str): The file path of the cleaned CSV facility data.
         self.csv_filepath = csv_filepath
         try:
             self.df = pd.read_csv(csv_filepath)
         except Exception as e:
-            print(f"读取CSV出错: {e}")
+            print(f"Error: {e}")
             self.df = pd.DataFrame()
             
         # 定义实例变量记录设施位置、类型、所在行政区等属性
@@ -30,7 +24,7 @@ class Facility:
             self.locations = list(zip(self.df['latitude'], self.df['longitude']))
             self.districts = self.df['district'].unique().tolist()
             self.records = self.df.to_dict('records')
-            print(f"成功加载 {len(self.records)} 个 {self.facility_type} 设施。")
+            print(f"Successfully loaded {len(self.records)} {self.facility_type} facilities.")
         else:
             self.facility_type = "Unknown_Facility"
             self.locations = []
