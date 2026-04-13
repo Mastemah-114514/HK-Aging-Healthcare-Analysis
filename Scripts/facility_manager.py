@@ -14,142 +14,269 @@ class Facility:
         try:
             self.df = pd.read_csv(csv_filepath)
         except Exception as e:
-            print(f"Error: {e}")
+            print(f"Error loading CSV data: {e}")
             self.df = pd.DataFrame()
             
-        # 定义实例变量记录设施位置、类型、所在行政区等属性
-        # 假设您的 CSV 经过清洗后统一包含：facility_id, facility_name_en, latitude, longitude, district, facility_type
+        # Define instance variables to record attributes like facility location, type, and address
+        # Assuming the cleaned CSV contains: Name_EN,Address_EN,Latitude,Longitude,Facility_Type
         if not self.df.empty:
-            self.facility_type = self.df.get('facility_type', pd.Series(['Unknown_Facility'])).iloc[0]
-            self.locations = list(zip(self.df['latitude'], self.df['longitude']))
-            self.districts = self.df['district'].unique().tolist()
+            self.facility_type = self.df.get('Facility_Type', pd.Series(['Unknown_Facility'])).iloc[0]
+            self.locations = list(zip(self.df['Latitude'], self.df['Longitude']))
+            self.addresses = self.df['Address_EN'].unique().tolist()
             self.records = self.df.to_dict('records')
             print(f"Successfully loaded {len(self.records)} {self.facility_type} facilities.")
         else:
             self.facility_type = "Unknown_Facility"
             self.locations = []
-            self.districts = []
+            self.addresses = []
             self.records = []
-            print("警告：加载的数据集为空。")
+            print("Warning: The loaded dataset is empty.")
 
 
-    def bind_capacity_data(self, capacity_csv_filepath):
-        """
-        【自定义拓展功能】：绑定设施容量和需求数据
-        作用：由于后续Task 3需要分析设施床位缺口，这里提前提供基础提取功能，
-             将官方分区床位数容量等信息与我们自身的设施类绑定。
-             
-        参数:
-            capacity_csv_filepath (str): 官方的分区容量/需求数据表路径
-        """
-        print("开始绑定设施分区容量指标...")
-        try:
-            cap_df = pd.read_csv(capacity_csv_filepath)
-            # 假设容量表包含列 "district" 和 "bed_capacity"
-            # 以行政区(district)为基准将容量数据连接至主表
-            self.df = pd.merge(self.df, cap_df[['district', 'bed_capacity']], on='district', how='left')
-            # 刷新记录
-            self.records = self.df.to_dict('records')
-            print("容量数据绑定完成！可以在后续功能中使用设施的 bed_capacity 属性。")
-        except Exception as e:
-            print(f"容量数据绑定失败: {e}")
+
 
 
     def to_feature_class(self, geodatabase_path):
         """
-        方法：将加载的设施信息转换为要素类并存储到 ArcGIS 地理数据库中。
-        
-        参数:
-            geodatabase_path (str): 目标 .gdb 地理数据库的绝对路径。
-        输出:
-            返回创建好的要素类的完整路径。
+        Method:
+            Convert the loaded facility information into a feature class and store it in an ArcGIS geodatabase.
+        Parameters:
+            geodatabase_path (str): The absolute path of the target .gdb geodatabase.
+        Returns:
+            Returns the full path of the created feature class.
         """
-        fc_name = f"{self.facility_type.replace(' ', '_')}_FC"
+        fc_name = f"{self.facility_type}_FeatureClass"
         fc_path = os.path.join(geodatabase_path, fc_name)
         
-        # 开启覆盖环境以防多次运行报错
+        # Enable the overwrite environment setting to avoid errors upon multiple runs
         arcpy.env.overwriteOutput = True
         
-        # 创建点要素类，使用 WGS1984 坐标系 (WKID 4326)
+        # Create a point feature class using the WGS1984 coordinate system (WKID 4326)
         sr = arcpy.SpatialReference(4326)
         arcpy.management.CreateFeatureclass(geodatabase_path, fc_name, "POINT", spatial_reference=sr)
         
-        # 定义要添加的字段
-        fields = ['facility_id', 'facility_name_en', 'district', 'facility_type']
-        
-        # 如果调用过 bind_capacity_data ，就多加一个床位属性列
-        if 'bed_capacity' in self.df.columns:
-            fields.append('bed_capacity')
+        # Define fields to be added
+        fields = ['facility_address', 'facility_name', 'facility_type', 'facility_location_WGS84']
 
-        # 在要素类中实际创建字段
+        # Actually create fields in the feature class
         for field in fields:
-            # capacity 给数值型，其他都是文本型
-            field_type = "LONG" if field == "bed_capacity" else "TEXT"
-            arcpy.management.AddField(fc_path, field, field_type)
+            arcpy.management.AddField(fc_path, field, "TEXT")
 
-        # 插入游标，插入列表第一个必须是空间几何形体标签：'SHAPE@XY'
+        # Insert cursor, the first item in the insert list must be the spatial geometry shape token: 'SHAPE@XY'
         insert_fields = ['SHAPE@XY'] + fields
         
         with arcpy.da.InsertCursor(fc_path, insert_fields) as cursor:
             for row in self.records:
                 row_values = []
-                # 追加经纬度对 (longitude=X, latitude=Y)
-                row_values.append((row['longitude'], row['latitude']))
+                # Append latitude and longitude pair (longitude=X, latitude=Y)
+                row_values.append((row['Longitude'], row['Latitude']))
                 
-                # 追加其他字段属性内容
+                # Append other field attribute contents
                 for f in fields:
-                    if f == "bed_capacity":
-                        # 处理空值
-                        val = row.get(f)
-                        row_values.append(int(val) if pd.notnull(val) else 0)
-                    else:
-                        row_values.append(str(row.get(f, 'N/A')))
+                    row_values.append(str(row.get(f, 'N/A')))
                         
-                # 将构建好的一行插入GDB中
+                # Insert the constructed row into the GDB
                 cursor.insertRow(row_values)
                 
-        print(f"要素类创建成功，已输出至: {fc_path}")
+        print(f"Feature class created successfully, exported to: {fc_path}")
         return fc_path
 
 
     def find_nearest_facility(self, target_lat, target_lon):
         """
-        方法：接收一对指定的经纬度，并返回所有记录中距离该位置最近的某个设施。
-        为了确保作为作业的可读性及精简性，此处采用平面欧氏距离（Euclidean Distance）进行坐标近似计算。
+        Method: Receive a specified pair of latitude and longitude (WGS84), project them to HK 1980 Grid (Easting, Northing), 
+        and return the facility record closest to this location based on legitimate Euclidean Distance in meters.
         
-        参数:
-            target_lat (float): 目标点纬度
-            target_lon (float): 目标点经度
+        Parameters:
+            target_lat (float): Target point latitude
+            target_lon (float): Target point longitude
             
-        返回:
-            dict: 包含最近设施英文名及其经纬度的 Python 字典对象。
+        Returns:
+            dict: A Python dictionary object containing the English name and coordinates of the nearest facility.
         """
         if not self.records:
-            print("目前没有设施数据可用于计算。")
+            print("Currently no facility data available for calculation.")
             return None
+            
+        # Define Spatial References: WKID 4326 is WGS84, WKID 2326 is Hong Kong 1980 Grid
+        sr_wgs84 = arcpy.SpatialReference(4326)
+        sr_hk1980 = arcpy.SpatialReference(2326)
+        
+        # Project Target Point
+        target_pt = arcpy.PointGeometry(arcpy.Point(target_lon, target_lat), sr_wgs84)
+        target_pt_proj = target_pt.projectAs(sr_hk1980)
+        target_easting = target_pt_proj.centroid.X
+        target_northing = target_pt_proj.centroid.Y
             
         nearest_fac = None
         min_dist = float('inf')
         
         for fac in self.records:
-            lat = fac['latitude']
-            lon = fac['longitude']
+            lat = fac['Latitude']
+            lon = fac['Longitude']
             
-            # 使用平面坐标直线性差值近似距离，简化作业计算过程
-            dist = math.sqrt((lat - target_lat)**2 + (lon - target_lon)**2)
+            # Project Facility Point
+            fac_pt = arcpy.PointGeometry(arcpy.Point(lon, lat), sr_wgs84)
+            fac_pt_proj = fac_pt.projectAs(sr_hk1980)
+            fac_easting = fac_pt_proj.centroid.X
+            fac_northing = fac_pt_proj.centroid.Y
+            
+            # Calculate Euclidean distance using projected Easting and Northing (Result in meters)
+            dist = math.sqrt((fac_easting - target_easting)**2 + (fac_northing - target_northing)**2)
             
             if dist < min_dist:
                 min_dist = dist
                 nearest_fac = fac
                 
         if nearest_fac:
-            # 组装返回结果对象
+            # Assemble the return result object
             result = {
-                'facility_name_en': nearest_fac.get('facility_name_en', 'Unknown'),
-                'latitude': nearest_fac.get('latitude'),
-                'longitude': nearest_fac.get('longitude'),
-                'district': nearest_fac.get('district', 'Unknown'),
+                'facility_name_en': nearest_fac.get('Name_EN', 'Unknown'),
+                'latitude': nearest_fac.get('Latitude'),
+                'longitude': nearest_fac.get('Longitude'),
+                'address': nearest_fac.get('Address_EN', 'Unknown'),
                 'relative_distance': min_dist
             }
             return result
         return None
+
+    def find_k_nearest_facilities(self, target_lat, target_lon, k=3):
+        """
+        [Bonus Feature] 
+        Method: Receive a specified pair of latitude and longitude (WGS84), project them to HK 1980 Grid, 
+        and return the top K facility records closest to this location based on Euclidean Distance in meters.
+        
+        Parameters:
+            target_lat (float): Target point latitude
+            target_lon (float): Target point longitude
+            k (int): The number of nearest facilities to retrieve (default is 3)
+            
+        Returns:
+            list: A list of length K containing dictionaries of the nearest facilities, sorted by distance.
+        """
+        if not self.records:
+            print("Currently no facility data available for calculation.")
+            return []
+            
+        # Define Spatial References: WKID 4326 is WGS84, WKID 2326 is Hong Kong 1980 Grid
+        sr_wgs84 = arcpy.SpatialReference(4326)
+        sr_hk1980 = arcpy.SpatialReference(2326)
+        
+        # Project Target Point
+        target_pt = arcpy.PointGeometry(arcpy.Point(target_lon, target_lat), sr_wgs84)
+        target_pt_proj = target_pt.projectAs(sr_hk1980)
+        target_easting = target_pt_proj.centroid.X
+        target_northing = target_pt_proj.centroid.Y
+            
+        distances_list = []
+        
+        for fac in self.records:
+            lat = fac['Latitude']
+            lon = fac['Longitude']
+            
+            # Project Facility Point
+            fac_pt = arcpy.PointGeometry(arcpy.Point(lon, lat), sr_wgs84)
+            fac_pt_proj = fac_pt.projectAs(sr_hk1980)
+            fac_easting = fac_pt_proj.centroid.X
+            fac_northing = fac_pt_proj.centroid.Y
+            
+            # Calculate Euclidean distance
+            dist = math.sqrt((fac_easting - target_easting)**2 + (fac_northing - target_northing)**2)
+            
+            distances_list.append({
+                'facility_name_en': fac.get('Name_EN', 'Unknown'),
+                'latitude': lat,
+                'longitude': lon,
+                'address': fac.get('Address_EN', 'Unknown'),
+                'relative_distance': dist
+            })
+            
+        # Sort the entire list based on distance from nearest to furthest
+        distances_list.sort(key=lambda x: x['relative_distance'])
+        
+        # Return only the top K records
+        return distances_list[:k]
+
+
+if __name__ == "__main__":
+    # 1. Automatically create and assign GDB workspace
+    # Define project data root directory
+    data_dir = r"D:\Course_materials\LSGI3315_GIS_Engineering\Group_Project\HK-Aging-Healthcare-Analysis\Data"
+    
+    # Set the required output GDB name
+    gdb_name = "HK_Aging_Healthcare_Analysis.gdb"
+    geodatabase_path = os.path.join(data_dir, gdb_name)
+    
+    print(f"Checking and configuring geodatabase: {geodatabase_path}")
+    try:
+        # Create GDB if it does not exist
+        if not arcpy.Exists(geodatabase_path):
+            arcpy.management.CreateFileGDB(data_dir, gdb_name)
+            print(f"Successfully created new GDB geodatabase in the Data folder: {gdb_name}")
+        else:
+            print("Found existing matching GDB geodatabase, will use it directly.")
+        arcpy.env.workspace = geodatabase_path
+    except Exception as e:
+        print(f"Issue occurred while configuring ArcGIS database environment (Please ensure arcpy environment is set up), details: {e}")
+
+    # 2. Configuration for 6 types of elderly and healthcare facilities basic data lists
+    # Pointing to the absolute paths of the six cleaned files prefixed with Cleaned_ in the Data folder
+    csv_file_path = [
+        os.path.join(data_dir, "ClinicsHealthCentresundertheDepartmentofHealth_cleaned.csv"),
+        os.path.join(data_dir, "ClinicsregisteredunderCap343_cleaned.csv"),
+        os.path.join(data_dir, "DayCareCentresfortheElderly_cleaned.csv"),
+        os.path.join(data_dir, "HospitalAuthorityHospitalInstitutionList_cleaned.csv"),
+        os.path.join(data_dir, "LocationofResidentialCareHomesfortheElderlyinHongKong_cleaned.csv"),
+        os.path.join(data_dir, "PrivatehealthcarefacilitiesunderCap633_cleaned.csv")
+    ]
+    
+    # 3. Batch reading CSV data and converting to six distinct ArcGIS Point Feature Classes
+    print("\nStarting batch processing and generating six types of facility feature classes")
+    
+    # Temporarily used to store all instantiated Facility objects
+    facilities_list = []
+
+    for idx, csv_path in enumerate(csv_file_path, 1):
+        print(f"\n[{idx}/6] Reading facility data: {os.path.basename(csv_path)}")
+        
+        # Instantiate Facility object
+        facility_obj = Facility(csv_path)
+        
+        if not facility_obj.records:
+            print(f"Warning: Failed to load data from {os.path.basename(csv_path)}, skipping this file.")
+            continue
+            
+        # Attempt to generate ArcGIS feature class
+        try:
+            out_fc = facility_obj.to_feature_class(geodatabase_path)
+            print(f"Feature class created successfully and saved to: {out_fc}")
+        except Exception as e:
+            print(f"Failed: ArcGIS feature class creation error: {e}")
+            
+        facilities_list.append(facility_obj)
+
+    # 4. Spatial query basic functionality test sample
+    test_latitude = 22.2800  
+    test_longitude = 114.1600
+    
+    # Perform a small validation to see if the function works
+    if facilities_list:
+        test_facility = facilities_list[0]
+        
+        # Original Test: Find 1 Nearest
+        print(f"\n[Test 1] Searching for the nearest facility to target coordinates ({test_latitude}, {test_longitude}) within the category [{test_facility.facility_type}]...")
+        nearest_result = test_facility.find_nearest_facility(test_latitude, test_longitude)
+        if nearest_result:
+            print(f"Found nearest facility: {nearest_result['facility_name_en']} (located in {nearest_result['address']})")
+            print(f"Approximate straight-line distance: {nearest_result['relative_distance']:.2f} meters")
+
+        # Bonus Feature Test: Find Top 3 Nearest
+        print(f"\n[Bonus Feature Test] Searching for the Top 3 nearest facilities to target coordinates...")
+        k_results = test_facility.find_k_nearest_facilities(test_latitude, test_longitude, k=3)
+        if k_results:
+            for i, res in enumerate(k_results, 1):
+                print(f"   => Top {i} Nearest: {res['facility_name_en']}")
+                print(f"      Address: {res['address']}")
+                print(f"      Distance: {res['relative_distance']:.2f} meters\n")
+
+    print("\nEntire process completed.")
