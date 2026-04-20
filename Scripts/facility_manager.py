@@ -1,4 +1,8 @@
-import arcpy
+try:
+    import arcpy
+except ImportError:
+    arcpy = None
+    print("Warning: arcpy not found. ArcGIS-specific functions will be disabled in this environment.")
 import pandas as pd
 import math
 import os
@@ -69,11 +73,22 @@ class Facility:
             for row in self.records:
                 row_values = []
                 # Append latitude and longitude pair (longitude=X, latitude=Y)
-                row_values.append((row['Longitude'], row['Latitude']))
+                row_values.append((row.get('Longitude', 0), row.get('Latitude', 0)))
+                
+                lat_str = str(row.get('Latitude', 'N/A'))
+                lon_str = str(row.get('Longitude', 'N/A'))
+                
+                # Custom map the CSV columns to the appropriate GDB fields
+                field_mapping = {
+                    'facility_address': row.get('Address_EN', 'N/A'),
+                    'facility_name': row.get('Name_EN', 'N/A'),
+                    'facility_type': self.facility_type,
+                    'facility_location_WGS84': f"{lat_str}, {lon_str}"
+                }
                 
                 # Append other field attribute contents
                 for f in fields:
-                    row_values.append(str(row.get(f, 'N/A')))
+                    row_values.append(str(field_mapping.get(f, 'N/A')))
                         
                 # Insert the constructed row into the GDB
                 cursor.insertRow(row_values)
@@ -142,7 +157,7 @@ class Facility:
 
     def find_k_nearest_facilities(self, target_lat, target_lon, k=3):
         """
-        [Bonus Feature] 
+        [Bonus Analysis] 
         Method: Receive a specified pair of latitude and longitude (WGS84), project them to HK 1980 Grid, 
         and return the top K facility records closest to this location based on Euclidean Distance in meters.
         
@@ -197,10 +212,42 @@ class Facility:
         # Return only the top K records
         return distances_list[:k]
 
+    def to_geojson(self):
+        """
+        [Bonus Analysis]
+        Method: Convert facility records to a standard GeoJSON FeatureCollection.
+        This allows the SilverGuard Web App to directly render the facilities on the frontend map.
+        
+        Returns:
+            dict: A GeoJSON FeatureCollection dictionary.
+        """
+        features = []
+        for row in self.records:
+            feature = {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [float(row.get('Longitude', 0)), float(row.get('Latitude', 0))]
+                },
+                "properties": {
+                    "name": row.get('Name_EN', 'Unknown'),
+                    "address": row.get('Address_EN', 'Unknown'),
+                    "facility_type": self.facility_type
+                }
+            }
+            features.append(feature)
+            
+        return {
+            "type": "FeatureCollection",
+            "features": features
+        }
+        print("Successfully converted facility records to GeoJSON.")
+
 
 if __name__ == "__main__":
     # 1. Automatically create and assign GDB workspace
     # Define project data root directory
+    # You can change the path below to your own path
     data_dir = r"D:\Course_materials\LSGI3315_GIS_Engineering\Group_Project\HK-Aging-Healthcare-Analysis\Data"
     
     # Set the required output GDB name
@@ -256,10 +303,11 @@ if __name__ == "__main__":
         facilities_list.append(facility_obj)
 
     # 4. Spatial query basic functionality test sample
+    # Enter your own coordinates to test the function
     test_latitude = 22.2800  
     test_longitude = 114.1600
     
-    # Perform a small validation to see if the function works
+    # Perform a validation to see if the function works
     if facilities_list:
         test_facility = facilities_list[0]
         

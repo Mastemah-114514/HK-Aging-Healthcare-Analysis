@@ -1,0 +1,262 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  /* iOS 17 Dark Mode Colors */
+  --bg-color: #000000;
+  --bg-secondary: #1C1C1E;
+  
+  /* Glassmorphism Panel Colors */
+  --panel-bg: rgba(28, 28, 30, 0.55);
+  --panel-border: rgba(255, 255, 255, 0.08);
+  --panel-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  
+  /* High contrast Typography */
+  --text-primary: #FFFFFF;
+  --text-secondary: rgba(235, 235, 245, 0.6);
+  --text-tertiary: rgba(235, 235, 245, 0.3);
+  
+  /* Vibrant Neon Accents for Data Visualization */
+  --accent-cyan: #00F0FF;
+  --accent-blue: #0A84FF;
+  --accent-red: #FF453A;
+  --accent-green: #32D74B;
+  --accent-orange: #FF9F0A;
+  --accent-glow: 0 0 16px rgba(10, 132, 255, 0.4);
+  
+  /* System Fonts */
+  --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
+  --border-radius-lg: 24px;
+  --border-radius-md: 16px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  height: 100%;
+  position: relative;
+}
+
+.map-container {
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  /* Subtly dim map for higher contrast with UI */
+  filter: brightness(0.85) contrast(1.1);
+}
+
+.ui-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+  display: flex;
+  padding: 32px;
+}
+
+/* Glassmorphism Components */
+.glass-panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--border-radius-lg);
+  padding: 32px;
+  pointer-events: auto;
+  box-shadow: var(--panel-shadow);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Optional specular highlight line on top edge */
+.glass-panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.2), rgba(255,255,255,0));
+  z-index: 1;
+}
+
+.sidebar {
+  width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Typography styles */
+.sidebar-title {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #FFF 0%, rgba(255,255,255,0.7) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 4px;
+}
+
+.sidebar-subtitle {
+  font-size: 15px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Dashboard Metric Cards */
+.metric-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--border-radius-md);
+  transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.metric-header {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.metric-value {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  color: var(--text-primary);
+  text-shadow: 0 0 20px rgba(255,255,255,0.1);
+}
+
+/* Highlight specifically for Red Critical Wait */
+.metric-card.critical-card .metric-value {
+  color: var(--accent-red);
+  text-shadow: 0 0 16px rgba(255, 69, 58, 0.4);
+}
+
+.metric-card.critical-card .metric-header {
+  color: var(--accent-red);
+  opacity: 0.8;
+}
+
+/* Pulsing dot for HA wait times */
+.pulse-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: var(--accent-red);
+  position: relative;
+  display: inline-block;
+  box-shadow: 0 0 12px var(--accent-red);
+}
+
+.pulse-dot::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border-radius: 50%;
+  background-color: transparent;
+  border: 2px solid var(--accent-red);
+  opacity: 0.8;
+  animation: pulse-ring 2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.color-box {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+}
+
+.divider {
+  height: 1px;
+  background: var(--panel-border);
+  margin: 20px 0;
+  width: 100%;
+}
+
+/* iOS Home Indicator Bar at bottom of screen */
+.home-indicator {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 134px;
+  height: 5px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 100px;
+  pointer-events: none;
+  z-index: 100;
+}
+
+/* Sleek Mapbox Popups Overrides */
+.mapboxgl-popup-content {
+  background: rgba(30, 30, 30, 0.85) !important;
+  backdrop-filter: blur(20px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
+  border: 1px solid rgba(255,255,255,0.15) !important;
+  color: white !important;
+  border-radius: 16px !important;
+  padding: 16px 20px !important;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.5) !important;
+}
+
+.mapboxgl-popup-tip {
+  border-top-color: rgba(30, 30, 30, 0.85) !important;
+}
+
+.mapboxgl-ctrl-bottom-left, .mapboxgl-ctrl-bottom-right {
+  display: none !important;
+}
