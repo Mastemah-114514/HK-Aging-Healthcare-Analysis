@@ -236,12 +236,12 @@ class Facility:
                 }
             }
             features.append(feature)
-            
+        print("Successfully converted facility records to geojson.")
         return {
             "type": "FeatureCollection",
             "features": features
         }
-        print("Successfully converted facility records to geojson.")
+
 
 
 if __name__ == "__main__":
