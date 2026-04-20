@@ -241,7 +241,7 @@ class Facility:
             "type": "FeatureCollection",
             "features": features
         }
-        print("Successfully converted facility records to GeoJSON.")
+        print("Successfully converted facility records to geojson.")
 
 
 if __name__ == "__main__":
