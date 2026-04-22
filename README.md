@@ -1,82 +1,68 @@
 # Project Overview
-This project provides a comprehensive solution for healthcare analysis focused on aging. The application is designed to process, analyze, and visualize data related to the aging population, offering valuable insights.
+This project is focused on providing solutions for aging healthcare through data analysis. It integrates advanced data processing techniques with a user-friendly interface for various stakeholders.
 
-# Architecture Description
-The application consists of both backend and frontend components that work together seamlessly.
+# Repository Structure
+```
+HK-Aging-Healthcare-Analysis/
+├── backend/
+│   ├── main.py
+│   ├── spatial_api.py
+│   └── live_data.py
+└── frontend/
+    ├── src/
+    └── public/
+```
 
-## Backend Components
-- **main.py**: This is the main entry point for the backend application. It sets up the server and initiates the API.
-- **spatial_api.py**: This module handles spatial data processing and provides endpoints for spatial queries.
-- **live_data.py**: This module manages the integration and processing of live data streams.
+# Technology Stack
+- **Backend**: Python (Flask)
+- **Frontend**: React, TypeScript, Vite
 
-## Frontend Components
-The frontend is built using:
-- **React**: A JavaScript library for building user interfaces.
-- **TypeScript**: A typed superset of JavaScript that compiles to plain JavaScript, allowing for better code quality and maintainability.
-- **Vite**: A build tool that provides a super-fast development environment.
+# Backend Components
+### `main.py`
+Responsible for initializing the Flask application and setting up routing. It connects to the database and handles incoming requests.
 
-# Installation and Setup Instructions
-## Backend Setup
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/Mastemah-114514/HK-Aging-Healthcare-Analysis.git
-   cd HK-Aging-Healthcare-Analysis
-   ```
-2. Install the required Python packages:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Run the backend application:
-   ```bash
-   python main.py
-   ```
+### `spatial_api.py`
+This module provides APIs for spatial analytics. It processes geographic data relevant to aging healthcare.
 
-## Frontend Setup
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-2. Install the required Node.js packages:
-   ```bash
-   npm install
-   ```
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
+### `live_data.py`
+Manages the collection and processing of live data for real-time analysis.
 
-# API Documentation
-## Example Endpoints
-- **GET /api/data**
-  - **Response**: Returns a list of healthcare data
-  - **Example**:
-  ```json
-  [
-    {
-      "id": 1,
-      "name": "Dataset 1",
-      "value": 1234
-    }
-  ]
-  ```
+# Frontend Components
+The frontend is developed using React and TypeScript to enhance maintainability and scalability. Vite is used for development to ensure fast reloads.
 
-- **POST /api/data**
-  - **Request**: Adds new healthcare data
-  - **Example**:
-  ```json
-  {
-    "name": "New Dataset",
-    "value": 5678
-  }
-  ```
-  - **Response**: Confirmation message
+# Installation Guide
+## Backend
+1. Clone the repository.
+2. Navigate to the `backend` directory.
+3. Install the dependencies using `pip install -r requirements.txt`.
 
-# Data Sources
-This project utilizes various datasets available through public health organizations and government databases. Ensure to abide by the terms of use for each dataset used.
+## Frontend
+1. Clone the repository.
+2. Navigate to the `frontend` directory.
+3. Install the dependencies using `npm install`.
+
+# Running Instructions
+## Backend
+Run the command `python main.py` to start the backend server.
+
+## Frontend
+Run `npm run dev` in the `frontend` directory to start the frontend.
+
+# API Endpoints Documentation
+- **GET /api/spatial**: Retrieve spatial data for analysis.
+- **POST /api/live**: Send live data to the server for processing.
+
+# Scripts Description
+- `main.py`: Main entry point for running the application.
+- `spatial_api.py`: Contains logic for handling spatial data requests.
+- `live_data.py`: Dedicated to live data handling.
 
 # Contributing Guidelines
-We welcome contributions from the community!
-1. Fork the repository
-2. Create a new branch for your feature
-3. Make your changes
-4. Submit a pull request for review
+1. Fork the repository.
+2. Create a feature branch (`git checkout -b feature/YourFeature`)
+3. Commit your changes (`git commit -m 'Add a new feature'`)
+4. Push to the branch (`git push origin feature/YourFeature`)
+5. Open a pull request.
+
+# License
+This project is licensed under the MIT License.
