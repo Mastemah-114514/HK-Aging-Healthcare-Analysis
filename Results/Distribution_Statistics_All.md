@@ -1,5 +1,6 @@
 # Spatial Distribution of 
-# ClinicsHealthCentresundertheDepartmentofHealth
+# ClinicsHealthCentresunderthe
+# DepartmentofHealth
 | District Name | Facility Count |
 |---|---|
 | KWUN TONG | 20 |
@@ -22,7 +23,6 @@
 | SOUTHERN | 5 |
 
 
----
 
 # Spatial Distribution of ClinicsregisteredunderCap343_FeatureClass
 
