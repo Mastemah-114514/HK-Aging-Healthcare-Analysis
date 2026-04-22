@@ -1,252 +1,31 @@
-# 守護銀髮：香港老齡健康設施空間分析項目
+# HK Aging Healthcare Analysis
 
-> **Guarding the Silver Age — A GIS Spatial Study of Hong Kong's Aging Healthcare Facilities**
+## Project Description
+This project focuses on improving healthcare services for the aging population. By leveraging data analysis and innovative technologies, we aim to create insightful solutions that enhance care delivery and patient outcomes.
 
-以 Python 與 ArcGIS 為核心，透過空間分析與地理數據洞察香港醫療與養老基礎設施的空間覆蓋率、服務可達性及真實供需缺口。
+## Code Overview
+The project consists of both frontend and backend components:
 
----
+### Frontend
+- Built with React.js and integrated with various libraries for enhanced user experience.
+- Responsive design for accessibility on various devices.
 
-## 目錄
+### Backend
+- RESTful API developed using Node.js and Express.
+- Connects to a MongoDB database for managing user data and healthcare information.
 
-- [項目簡介](#項目簡介)
-- [邏輯結構](#邏輯結構)
-- [Task 1 — 數據籌備與清洗](#task-1--數據籌備與清洗)
-- [Task 2 — 面向對象的設施模型](#task-2--面向對象的設施模型)
-- [Task 3 — 綜合空間分析與缺口量化](#task-3--綜合空間分析與缺口量化)
-- [技術路線](#技術路線)
-- [數據清單](#數據清單)
-- [報告與成果編排](#報告與成果編排)
-- [時間線與分工](#時間線與分工)
-- [附錄](#附錄)
+## Setup Instructions
+### Frontend Setup
+1. Clone the repository: `git clone https://github.com/Mastemah-114514/HK-Aging-Healthcare-Analysis.git`
+2. Navigate to the frontend directory: `cd frontend`
+3. Install dependencies: `npm install`
+4. Start the development server: `npm start`
 
----
+### Backend Setup
+1. Navigate to the backend directory: `cd backend`
+2. Install dependencies: `npm install`
+3. Start the server: `node server.js`
 
-## 項目簡介
-
-隨着香港步入深度老齡化社會，合理佈局的醫療與養老設施是保障長者生活質量的基石。本項目聚焦全港六大類前線醫療與康養建築，結合人口普查與床位容量數據，進行全方位的可達性與資源分配評估。
-
-本項目以三個任務層級，回答空間分佈與需求對齊的核心問題：
-
-| 任務 | 核心目標 | 關鍵方法 |
-|------|---------|---------|
-| Task 1 | 數據籌備與清洗 | 數據清洗 · 座標統一 · 實體屬性提取 |
-| Task 2 | 面向對象的設施模型 | 封裝 Facility 類 · 要素類轉換 · 容量數據綁定 |
-| Task 3 | 綜合空間分析 | 緩衝區分析 · 多設施疊加交集 · 供需缺口量化 |
-
-### 核心競爭力
-
-1. **真實容量賦能** — 引入社會福利署(SWD)的真實分區床位容量數據，使覆蓋率評估從「點位數量」升級為「真實容納度」。
-2. **純代碼驅動** — 拋棄傳統基於前端點擊的 GIS 流程，全流程使用 Python 與 `arcpy` 實現自動化建模。
-3. **政策洞察力** — 聚焦基礎設施與老齡人口的真實匹配度，量化出具體的床位缺口，提供直接的政策決策數據。
+Ensure that your MongoDB server is running and configured correctly before starting the backend server.
 
 ---
-
-## 邏輯結構
-
-採用 **三段式工作流**，開發難度與數據維度逐級遞進：
-
-```
-清洗標準化（數據層）  →  封裝組件化（模塊層）  →  綜合運算與制圖（應用層）
-     Task 1                     Task 2                    Task 3
-```
-
----
-
-## Task 1 — 數據籌備與清洗
-
-> **Data Engineering · 地理數據的標準化重構**
-
-### 核心任務：統一數據標準
-
-- **去噪處理**：剔除無關列與表格中的中文字符，保障後續 Python 分析暢通無阻。
-- **座標重組**：將不同格式的經緯度與坐標系統一轉化為十進制 (DD)，保障跨圖層計算精準度。
-- **格式規範**：確定六類設施統一的字段規範（`facility_id`, `facility_name_en`, `latitude`, `longitude`, `district`, `facility_type`, `address`）。
-
-### 數據
-
-| 數據集 | 來源 |
-|--------|------|
-| 六大類設施 CSV 原始數據 | 項目自帶提供 |
-| 清洗後的設施 CSV 子集 | 輸出場景：/Data/Cleaned/ 目錄 |
-
----
-
-## Task 2 — 面向對象的設施模型
-
-> **Object-Oriented Modeling · 構建可複用的空間設施類**
-
-### 方法論前提
-
-使用面向對象編程 (OOP) 思想，為每一類設施建立統一的 Python 操作接口，封裝底層提取與存儲邏輯，為團隊協作的 Task 3 打好地基。
-
-### 核心模塊：`Facility` 類設計
-
-三層功能封裝：
-
-**① 基本屬性與數據庫構建 (Initialization & to_feature_class)**
-- 輸入：標準化 CSV 檔案
-- 輸出：將坐標驅動為 `arcpy` Point Geometry，包含全量屬性字段，寫入 `.gdb` 地理數據庫。
-
-**② 空間檢索 (Closest Facility Finding)**
-- 算法：引入平面歐幾里得距離估算，避免過度工程化，快速匹配 `(lat, lon)` 到最近中心。
-
-**③ 創新功能：容量數據綁定 (Capacity Binding)**
-- 關聯鍵：基於 `district`（行政區）
-- 作用：提前關聯政府分區床位數據，直接掛載 `bed_capacity` 屬性。
-
-### 數據
-
-| 數據集 | 來源 |
-|--------|------|
-| 清洗後的設施 CSV | Task 1 產物 |
-| 社福署床位容量數據 | 手動採集自 SWD 官網 (PDF轉CSV) |
-
----
-
-## Task 3 — 綜合空間分析與缺口量化
-
-> **Spatial Analysis & Policy Insight · 可達性評估與資源再分配**
-
-本章最大優勢：全流程 Python 驅動的自動化疊置運算，輔以老齡人口的真實需求對齊。
-
-### 核心分析流程
-
-**① 分佈特徵與覆蓋普查**
-- 利用 `SpatialJoin` 對接設施點與香港十八區面，統計區域分佈特質。
-- 根據設定閾值將區域劃分為「覆蓋充裕區」與「覆蓋不足區」。
-
-**② 動態緩衝區可達性**
-- 編寫參數化函數，接收任意步行距離參數（如 500m / 1000m）。
-- 使用 `Buffer` 生成服務範圍，計算緩衝面積在各區的覆蓋率。
-
-**③ 複合設施聯動服務區**
-- 通過 `Intersect` 疊切至少 3 類設施的服務緩衝圓，篩選出養老醫療資源高度集聚的「黃金地段」。
-
-### 核心地圖與指標：床位供需缺口模型
-
-在找出了「覆蓋不足區」後，我們將進一步疊加真實的人口與設施容納量進行深度量化。
-
-$$Gap\_Index_i = (P_i \times N_{standard}) - C_i$$
-
-| 變量 | 含義 | 數據來源 / 備註 |
-|------|------|---------|
-| $P_i$ | 第 $i$ 行政區的 65歲+ 老齡人口數 | 香港統計處 2021 人口普查 |
-| $N_{standard}$ | 每千名老齡人口的標配床位係數 | 參考標準（如 0.06，即千人60床） |
-| $C_i$ | 第 $i$ 行政區當前總床位數 | Task 2 綁定的容量數據 |
-| $Gap\_Index_i$ | 該區缺口（正數為短缺，負數為富餘）| 直觀輸出需新建床位基數 |
-
-### 數據
-
-| 數據集 | 來源 |
-|--------|------|
-| GDB 系列設施要素類 | 本地由 Task 2 生成輸出 |
-| 全港行政區劃面 (District Boundary) | data.gov.hk（地政總署） |
-| 老齡人口分佈 CSV (2021) | data.gov.hk / 統計處 |
-
----
-
-## 技術路線
-
-### 軟件與平台
-
-| 工具 | 用途 |
-|------|------|
-| Python 3.x | 核心後端邏輯與對象類構建 |
-| Pandas / NumPy | 表格清洗、數據對接與指標運算 |
-| Arcpy (ArcGIS API) | Buffer, Intersect, Spatial Join 等空間處理 |
-| ArcGIS Pro | 數據庫可視化檢查、最終成果製圖渲染 |
-
-### 腳本執行架構
-
-**Task 2 `facility_manager.py`:**
-```python
-實例化 Facility → 執行 bind_capacity_data('capacity.csv') 
-→ 執行 to_feature_class('database.gdb')
-```
-
-**Task 3 主腳本:**
-```python
-導入各類 Facility 要素 → 調用 arcpy.analysis 分析模塊
-→ 輸入人口表算數運算 → 導出 CSV 指標結果 / 渲染地圖
-```
-
----
-
-## 數據清單
-
-### 已有（項目初始提供）
-
-- ✅ 六類康養與前線醫療設施原始 CSV 數據
-- ✅ 基礎區劃與地理背景數據集
-
-### 公開下載
-
-| 數據集 | 來源 |
-|--------|------|
-| 2021年老齡人口分佈與比例 | 政府統計處 2021 人口普查報告 |
-| 空間區劃 shapefile | data.gov.hk（地政總署/規劃署） |
-
-### 手動採集
-
-| 數據集 | 來源 | 方法 |
-|--------|------|------|
-| 社福署設施分區床位容量 | 社會福利署(SWD)官網公開PDF | 錄入為單獨的 CSV 表以供綁定 |
-
----
-
-## 報告與成果編排
-
-### 最終提交物清單
-
-```
-┌─────────────────────────────────────────────────┐
-│  一、說明報告 (Report)                            │
-│  - Task 2 個人兩頁報告（含操作說明、函數截圖）         │
-│  - Task 3 小組大報告（含方法與核心缺口公式、分工表）    │
-├─────────────────────────────────────────────────┤
-│  二、源代碼與工具 (Code & Scripts)                 │
-│  - \Scripts\facility_manager.py (Task 2)        │
-│  - \Scripts\spatial_analysis.py (Task 3)        │
-├─────────────────────────────────────────────────┤
-│  三、空間數據集與圖紙 (Maps & GDB)                  │
-│  - \Data\ 乾淨的 CSV 與打包完備的 Geodatabase        │
-│  - 基於缺口指數和覆蓋區輸出的 PDF 靜態分析地圖          │
-└─────────────────────────────────────────────────┘
-```
-
----
-
-## 時間線與分工
-
-### 開發與制圖工期
-
-| 階段 | 任務 |
-|------|------|
-| **第 1 周** | 完成 Task 1 數據清洗；梳理與下載官方床位、人口數據 |
-| **第 2 周** | 組員獨立編寫並提交 Task 2 個人 Python 類腳本，通過測試 |
-| **第 3 周** | 聚合數據，編寫 Task 3 空間分析處理邏輯，生成缺口指標 |
-| **第 4 周** | 導入 ArcGIS 桌面版出圖；撰寫文字報告與準備現場演講 |
-
-### 分工建議
-
-| 角色 | 職責 |
-|------|------|
-| **數據與接口線** | 數據清洗 · 創建 Facility 基類 · 編寫接口文檔 |
-| **空間分析線** | 分析算法搭建 · Arcpy 調用 · 缺口公式推算模型構建 |
-| **出圖與彙報線** | ArcGIS 製圖與配色 · 撰寫書面報告 · PPT 排版與演講準備 |
-
----
-
-## 附錄
-
-### 附錄 A：數據集存放結構規範
-
-為保證程序的完美跑通，切記維持以下文件夾結構：
-- `/Data/Raw/`: 初始文件與下載的官方報告
-- `/Data/Cleaned/`: 清除中文與亂碼的乾淨 CSV
-- `/Data/Output.gdb/`: Task 2 產出的要素類
-- `/Scripts/`: 存放統一的 Python 腳本
-
-### License
-
-**版權所有，為本課程專屬專案開發。如需外部使用請註明團隊出處。**
