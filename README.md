@@ -31,10 +31,11 @@ The first phase of the project focused on data engineering, object-oriented mode
   * The core data packages for the spatial analysis. Contains raw CSV datasets of six types of healthcare and elderly facilities, demographic data, and the cleaned subsets used for geodatabase creation.
 * **`📁 Scripts/`**
   * Contains all pure Python files driving the spatial automation. Key files include:
-    * `Facility_initializer.py`: Initializes and cleans raw healthcare data using Object-Oriented modeling.
-    * `Facility_distribution_analysis.py`: Calculates spatial distribution statistics and population-normalized heatmap coverage.
-    * `Facility_overlay_distribution_analysis.py` & `Bonus_residential_overlay_analysis.py`: Performs overlay spatial analysis between facilities and residential areas.
-    * `Buffer_analysis.py`: Analyzes the service area buffers of healthcare facilities.
+    * `Task1_Data_cleaning.py`: Performs initial preprocessing and cleaning of the raw datasets.
+    * `Task2_Facility_initializer.py`: Initializes and processes raw healthcare data using Object-Oriented modeling.
+    * `Task3_Facility_distribution_analysis.py`: Calculates spatial distribution statistics and population-normalized heatmap coverage.
+    * `Task3_Facility_overlay_distribution_analysis.py` & `Bonus_residential_overlay_analysis.py`: Performs overlay spatial analysis between facilities and residential areas.
+    * `Task3_Buffer_analysis.py`: Analyzes the service area buffers of healthcare facilities.
 * **`📁 Results/`**
   * Stores the final analytical outputs. This includes:
     * **GDB Layers (`.gdb`)**: The geodatabase containing feature classes, buffer zones, and heatmap layers.
