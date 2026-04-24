@@ -27,12 +27,14 @@ This repository contains the full workflow and final application for our spatial
 
 The first phase of the project focused on data engineering, object-oriented modeling, and spatial analysis using Python and `arcpy`.
 
-* **`📁 Arcgispro_Visualization/`**
-  * Contains the **ArcGIS Pro Map Project** files (`.aprx`). This is where the spatial data is visualized, and the final presentation maps are generated and styled.
 * **`📁 Data/`**
   * The core data packages for the spatial analysis. Contains raw CSV datasets of six types of healthcare and elderly facilities, demographic data, and the cleaned subsets used for geodatabase creation.
 * **`📁 Scripts/`**
-  * Contains all pure Python files driving the spatial automation. Notable files include `facility_manager.py` (for OOP data modeling and ArcGIS geodatabase generation) and other spatial analysis scripts.
+  * Contains all pure Python files driving the spatial automation. Key files include:
+    * `Facility_initializer.py`: Initializes and cleans raw healthcare data using Object-Oriented modeling.
+    * `Facility_distribution_analysis.py`: Calculates spatial distribution statistics and population-normalized heatmap coverage.
+    * `Facility_overlay_distribution_analysis.py` & `Bonus_residential_overlay_analysis.py`: Performs overlay spatial analysis between facilities and residential areas.
+    * `Buffer_analysis.py`: Analyzes the service area buffers of healthcare facilities.
 * **`📁 Results/`**
   * Stores the final analytical outputs. This includes:
     * **GDB Layers (`.gdb`)**: The geodatabase containing feature classes, buffer zones, and heatmap layers.
